@@ -1,6 +1,7 @@
 from werkzeug.wrappers import Response, Request
 from werkzeug.serving import run_simple
 from werkzeug.routing import Map, Rule
+from jinja2 import PackageLoader, Environment
 
 class Jlask(object):
     # 初始化url_map和存储endpoint对应视图函数
@@ -9,7 +10,7 @@ class Jlask(object):
 
     def dispatch_request(self, request):
         url = request.path
-        urls = self.url_map.bind('127.0.0.1:5000')
+        urls = self.url_map.bind(request.host)
         endpoint = urls.match(path_info=url)[0]
         view_func = self.endpoint_dict[endpoint](request)
         if isinstance(view_func, str):
@@ -57,6 +58,24 @@ class Jlask(object):
             port = 5000
         # 注意第三个参数是自己，自己是一个可调用的类
         run_simple(host, port, self, **options)
+
+
+    def redirect(self, request, path):
+        urls = self.url_map.bind(request.host)
+        endpoint = urls.match(path_info=path)[0]
+        view_func = self.endpoint_dict[endpoint](request)
+        if isinstance(view_func, str):
+            return Response(view_func)
+        else:
+            return view_func
+
+
+def render_template(self, python_project, template, **kwargs):
+    env = Environment(loader=PackageLoader(python_project, 'templates'))
+    template = env.get_template(template)
+    return template.render(**kwargs)
+
+
 
 app = Jlask()
 
