@@ -1,7 +1,8 @@
 from werkzeug.wrappers import Response, Request
 from werkzeug.serving import run_simple
 from werkzeug.routing import Map, Rule
-from jinja2 import PackageLoader, Environment
+from jinja2 import PackageLoader, Environment, FileSystemLoader
+import os
 
 class Jlask(object):
     # 初始化url_map和存储endpoint对应视图函数
@@ -9,7 +10,9 @@ class Jlask(object):
     endpoint_dict = {}
 
     def dispatch_request(self, request):
+        print(self.url_map)
         url = request.path
+        print(url)
         urls = self.url_map.bind(request.host)
         endpoint = urls.match(path_info=url)[0]
         view_func = self.endpoint_dict[endpoint](request)
@@ -70,10 +73,12 @@ class Jlask(object):
             return view_func
 
 
-def render_template(self, python_project, template, **kwargs):
-    env = Environment(loader=PackageLoader(python_project, 'templates'))
-    template = env.get_template(template)
-    return template.render(**kwargs)
+def render_template(path, template, **kwargs):
+    template_path = os.path.join(path, 'templates')
+    print(template_path)
+    jinja_env = Environment(loader=FileSystemLoader(template_path), autoescape=True)
+    t = jinja_env.get_template(template)
+    return Response(t.render(kwargs), mimetype='text/html')
 
 
 
