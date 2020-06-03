@@ -1,7 +1,8 @@
 from werkzeug.wrappers import Response, Request
 from werkzeug.serving import run_simple
 from werkzeug.routing import Map, Rule
-from jinja2 import PackageLoader, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
+from werkzeug.routing import redirect
 import os
 
 class Jlask(object):
@@ -12,7 +13,7 @@ class Jlask(object):
     def dispatch_request(self, request):
         print(self.url_map)
         url = request.path
-        print(url)
+        # print(url)
         urls = self.url_map.bind(request.host)
         endpoint = urls.match(path_info=url)[0]
         view_func = self.endpoint_dict[endpoint](request)
@@ -62,20 +63,23 @@ class Jlask(object):
         # 注意第三个参数是自己，自己是一个可调用的类
         run_simple(host, port, self, **options)
 
-
-    def redirect(self, request, path):
-        urls = self.url_map.bind(request.host)
-        endpoint = urls.match(path_info=path)[0]
-        view_func = self.endpoint_dict[endpoint](request)
-        if isinstance(view_func, str):
-            return Response(view_func)
-        else:
-            return view_func
+    def redirect(self, path):
+        # path是重定向的路由
+        return redirect(path)
+        # urls = self.url_map.bind(request.host)
+        # endpoint = urls.match(path_info=path)[0]
+        # view_func = self.endpoint_dict[endpoint](request)
+        # if isinstance(view_func, str):
+        #     response = Response(view_func)
+        # else:
+        #     response = view_func
+        # response.headers["Location"] = path
+        # return response
 
 
 def render_template(path, template, **kwargs):
     template_path = os.path.join(path, 'templates')
-    print(template_path)
+    # print(template_path)
     jinja_env = Environment(loader=FileSystemLoader(template_path), autoescape=True)
     t = jinja_env.get_template(template)
     return Response(t.render(kwargs), mimetype='text/html')

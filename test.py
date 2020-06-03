@@ -9,7 +9,7 @@ app.add_url_rule(rule='/', view_func=Hello, methods=['GET'])
 
 
 def World(request):
-    return app.redirect(request, '/')
+    return app.redirect('/')
 app.add_url_rule(rule='/test', view_func=World, methods=['GET'])
 
 
