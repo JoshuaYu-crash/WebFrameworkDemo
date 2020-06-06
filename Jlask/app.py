@@ -11,10 +11,12 @@ class Jlask(object):
     endpoint_dict = {}
 
     def dispatch_request(self, request):
-        print(self.url_map)
+        # print("map", self.url_map)
         url = request.path
-        # print(url)
+        # print("url", url)
+        # print("method", request.method)
         urls = self.url_map.bind(request.host)
+        # print(urls.match(path_info=url))
         endpoint = urls.match(path_info=url)[0]
         view_func = self.endpoint_dict[endpoint](request)
         if isinstance(view_func, str):
@@ -84,6 +86,15 @@ def render_template(path, template, **kwargs):
     t = jinja_env.get_template(template)
     return Response(t.render(kwargs), mimetype='text/html')
 
+class req():
+    def __init__(self, request):
+        self.request = request
+
+    def formdata(self):
+        return self.request.form.to_dict()
+
+    def methods(self):
+        return self.request.method
 
 
 app = Jlask()
